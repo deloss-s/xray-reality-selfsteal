@@ -1,0 +1,435 @@
+# Nginx + local web page
+```sh
+apt install sudo git curl nginx certbot python3-certbot-nginx -y
+```
+
+## Create web page
+```sh
+mkdir -p /var/www/fake
+```
+```sh
+vim /var/www/fake/index.html
+```
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в Confluence</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f5f7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+            width: 350px;
+            text-align: center;
+        }
+
+        .logo {
+            margin-bottom: 20px;
+        }
+
+        .logo img {
+            width: 120px;
+        }
+
+        h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #0052cc;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #dfe1e6;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .error {
+            border-color: red;
+        }
+
+        .error-message {
+            color: red;
+            font-size: 14px;
+            display: none;
+            margin-top: 10px;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #0052cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            background-color: #0747a6;
+        }
+
+        .help-links {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .help-links a {
+            color: #0052cc;
+            text-decoration: none;
+        }
+
+        .help-links a:hover {
+            text-decoration: underline;
+        }
+         /* Стили для модального окна */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-container">
+    <div class="logo">
+        <img src="https://cdn.icon-icons.com/icons2/2429/PNG/512/confluence_logo_icon_147305.png" alt="Confluence">
+    </div>
+    <h2 id="login-title">Войти в Confluence</h2>
+    <form id="login-form">
+        <input type="text" id="username" name="username" placeholder="Адрес электронной почты">
+        <input type="password" id="password" name="password" placeholder="Введите пароль">
+        <button type="submit" id="login-button">Войти</button>
+    </form>
+    <div id="error-message" class="error-message">Неправильное имя пользователя или пароль.</div>
+    <div class="help-links">
+        <a href="#" id="forgot-link">Не удается войти?</a> • <a href="#" id="create-link">Создать аккаунт</a>
+    </div>
+</div>
+
+<div id="myModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <p id="modal-text">Для создания аккаунта обратитесь к администратору.</p>
+    </div>
+</div>
+
+<script>
+    function setLanguage(lang) {
+        const elements = {
+            'ru': {
+                loginTitle: 'Войти в Confluence',
+                usernamePlaceholder: 'Адрес электронной почты',
+                passwordPlaceholder: 'Введите пароль',
+                loginButton: 'Войти',
+                forgotLink: 'Не удается войти?',
+                createLink: 'Создать аккаунт',
+                createAccountText: 'Для создания аккаунта обратитесь к администратору.',
+                forgotPasswordText: 'Для восстановления доступа обратитесь к администратору.',
+                errorMessage: 'Неправильное имя пользователя или пароль.'
+            },
+            'en': {
+                loginTitle: 'Login to Confluence',
+                usernamePlaceholder: 'Email address',
+                passwordPlaceholder: 'Enter password',
+                loginButton: 'Login',
+                forgotLink: 'Can\'t log in?',
+                createLink: 'Create an account',
+                createAccountText: 'To create an account, please contact your administrator.',
+                forgotPasswordText: 'To recover access, please contact your administrator.',
+                errorMessage: 'Incorrect username or password.'
+            }
+        };
+
+        document.getElementById('login-title').innerText = elements[lang].loginTitle;
+        document.getElementById('username').placeholder = elements[lang].usernamePlaceholder;
+        document.getElementById('password').placeholder = elements[lang].passwordPlaceholder;
+        document.getElementById('login-button').innerText = elements[lang].loginButton;
+        document.getElementById('forgot-link').innerText = elements[lang].forgotLink;
+        document.getElementById('create-link').innerText = elements[lang].createLink;
+
+        // Устанавливаем тексты для модальных окон и сообщений об ошибках
+        document.getElementById('create-link').dataset.modalText = elements[lang].createAccountText;
+        document.getElementById('forgot-link').dataset.modalText = elements[lang].forgotPasswordText;
+        document.getElementById('error-message').innerText = elements[lang].errorMessage;
+    }
+
+    function detectLanguage() {
+        const userLang = navigator.language || navigator.userLanguage;
+        if (userLang.startsWith('ru')) {
+            setLanguage('ru');
+        } else {
+            setLanguage('en');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', detectLanguage);
+
+    var modal = document.getElementById("myModal");
+
+    var span = document.getElementsByClassName("close")[0];
+
+    function openModal(text) {
+        document.getElementById('modal-text').innerText = text;
+        modal.style.display = "block";
+    }
+
+    document.getElementById("create-link").onclick = function(event) {
+        event.preventDefault();
+        openModal(this.dataset.modalText);
+    }
+
+    document.getElementById("forgot-link").onclick = function(event) {
+        event.preventDefault();
+        openModal(this.dataset.modalText);
+    }
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+
+    document.getElementById('login-form').onsubmit = function(event) {
+        event.preventDefault();
+        var username = document.getElementById('username');
+        var password = document.getElementById('password');
+        var errorMessage = document.getElementById('error-message');
+
+        username.classList.remove('error');
+        password.classList.remove('error');
+        errorMessage.style.display = 'none';
+
+        var hasError = false;
+        if (username.value.trim() === '') {
+            username.classList.add('error');
+            hasError = true;
+        }
+        if (password.value.trim() === '') {
+            password.classList.add('error');
+            hasError = true;
+        }
+
+        if (hasError) {
+            return;
+        }
+
+        errorMessage.style.display = 'block';
+    };
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+
+</body>
+</html>
+```
+## nginx config
+```sh
+rm /etc/nginx/sites-enabled/default
+rm /etc/nginx/sites-available/default
+```
+Temporary on 80
+```sh
+vim /etc/nginx/sites-available/fake
+```
+```
+server {
+    listen 80;
+    server_name $DOMAIN;
+
+    root /var/www/fake;
+    index index.html;
+}
+```
+```sh
+ln -s /etc/nginx/sites-available/fake /etc/nginx/sites-enabled/
+nginx -t && systemctl restart nginx
+```
+## tls certs
+```sh
+systemctl stop nginx
+sudo certbot certonly --standalone -d $DOMAIN
+systemctl start nginx
+```
+```sh
+vim /etc/nginx/sites-available/fake
+```
+```
+server {
+    listen 127.0.0.1:8443 ssl;
+    server_name $DOMAIN;
+
+    ssl_certificate /etc/letsencrypt/live/$DOMAIN/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/$DOMAIN/privkey.pem;
+
+    root /var/www/fake;
+    index index.html;
+}
+```
+```sh
+nginx -t && systemctl restart nginx
+```
+Check ports
+```sh
+ss -tulpn | grep 443
+ss -tulpn | grep 8443
+```
+# Xray
+## Xray + reality + nginx fallback
+```sh
+mkdir -p /root/xray && cd /root/xray
+```
+```sh
+bash <(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)
+```
+```sh
+xray version
+```
+Generate reality keys & save both
+```sh
+xray x25519
+```
+Generate uuid & save
+```sh
+xray uuid
+```
+Generate shortIDs
+```sh & save
+openssl rand -hex 8
+```
+xray config
+```
+vim /usr/local/etc/xray/config.json
+```
+```json
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "listen": "0.0.0.0",
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "name" : "kamil",
+            "id": "33271c19-3322-4d6e-b5a9-a6b45b605356",
+            "flow": "xtls-rprx-vision"
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "tcp",
+        "security": "reality",
+        "realitySettings": {
+          "dest": "127.0.0.1:8443",
+          "serverNames": ["$DOMAIN"],
+          "privateKey": "2Es_HxDpPlng64EYpi949TwfCiSqm-5HUvQueShq1GY",
+          "shortIds": ["a3991c5178d39753"]
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": ["http", "tls", "quic"]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct",
+      "settings": {
+        "domainStrategy": "AsIs",
+        "redirect": "",
+        "noises": []
+      }
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "blocked"
+    }
+  ]
+}
+```
+Launch
+```sh
+systemctl restart xray
+systemctl enable xray
+```
+Check if 443 listened by xray
+```sh
+ss -tulpn | grep 443
+```
+Check fallback from another device
+```sh
+curl -k https://$DOMAIN
+```
+## Xray connection
+Generate connection link template
+```sh
+vless://UUID@DOMAIN:443?type=tcp&security=reality&pbk=PUBLIC_KEY&sni=DOMAIN&fp=chrome&flow=xtls-rprx-vision
+```
