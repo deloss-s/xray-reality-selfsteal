@@ -11,6 +11,7 @@ To use any of that sh scripts:
 2. `cd xray-reality-selfsteal` to go to repo directory
 3. `sudo chmod +x *` to make all the files executable
 4. `./xray-script.sh` to launch to managemenet script, then the script will explain you what to do
+5. you also would need to get a domain and an A link for that domain to the ip of your VPS in DNS system
 
 ## Options of the management script
 1. Core management
@@ -35,7 +36,12 @@ After you launch that point, the script will ask you to enter your domain, after
 5) Deploys it all to the working state
 6) Then you will be able to create users and maintain them
 
-# Dual-server 2hop + routing
+# Additional
+## Other scripts
+- `nginx.sh` - to control nginx configuration and service
+- `tls.sh` - to control tls sertificates for your domain
+
+## Dual-server 2hop + routing
 In case if you deside to create 2hop system (you connect to server 1, it makes domain routing and or send direct queries or routes the traffick to the server 2), there is:
 1. Manual how to do that
 2. List of domains for ru zone that you'd better send to direct via routing rules in xray config
