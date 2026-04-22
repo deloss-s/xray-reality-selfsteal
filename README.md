@@ -9,7 +9,7 @@ This is a shell script for managing a bare xray installation on your VPS server.
 To use any of that sh scripts:
 1. `git clone` this repo
 2. `cd xray-reality-selfsteal` to go to repo directory
-3. `sudo chmod +x *` to make all the files executable
+3. `sudo chmod +x ./scripts/*` to make all the files executable
 4. `./xray-script.sh` to launch to managemenet script, then the script will explain you what to do
 5. you also would need to get a domain and an A link for that domain to the ip of your VPS in DNS system
 
