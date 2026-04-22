@@ -7,12 +7,12 @@ This is a shell script for managing a bare xray installation on your VPS server.
 - automatically setting up the infrastructure for you with the following config: xray + vless + reality + selfsteal, nginx + subscriptions + fake web page;
 
 To use any of that sh scripts:
-- `git clone` this repo
-- `cd xray-reality-selfsteal` to go to repo directory
-- `sudo chmod +x *` to make all the files executable
-- `./`
+1. `git clone` this repo
+2. `cd xray-reality-selfsteal` to go to repo directory
+3. `sudo chmod +x *` to make all the files executable
+4. `./xray-script.sh` to launch to managemenet script, then the script will explain you what to do
 
-## Options
+## Options of the management script
 1. Core management
     1. Start | Stop | Restart
     2. Edit config in nvim
